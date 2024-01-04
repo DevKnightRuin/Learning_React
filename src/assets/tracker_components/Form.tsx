@@ -2,6 +2,7 @@ import { DataInfo } from "../Utilities/interfaceTypes";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useRef } from "react";
 
 interface Props {
 	onSubmitProp: (data: DataInfo) => void;
@@ -19,6 +20,13 @@ type ItemData = z.infer<typeof schema>;
 
 //using React-Hook-Forms
 const Form = ({ onSubmitProp }: Props) => {
+	const inputRef = useRef<HTMLInputElement>(null);
+	//useEffect - used for side effects, consider this for anything that changes after the rendering of the page happens
+	useEffect(() => {
+		//this will focus the name input after the page is rendered.
+		if (inputRef.current) inputRef.current.focus();
+	});
+
 	const {
 		register,
 		handleSubmit,
@@ -45,12 +53,13 @@ const Form = ({ onSubmitProp }: Props) => {
 				{/* <form onSubmit={(data) => console.log(data)}> */}
 				<div className="mb-3">
 					<label
-						htmlFor="firstname"
+						htmlFor="name"
 						className="form-label"
 					>
 						Product Name
 						<input
 							{...register("name")}
+							ref={inputRef}
 							className="form-control"
 							type="text"
 							id="name"
@@ -81,7 +90,7 @@ const Form = ({ onSubmitProp }: Props) => {
 						<input
 							{...register("cost", { valueAsNumber: true })}
 							type="number"
-							id="Cost"
+							id="cost"
 							className="form-control"
 						/>
 						{errors.cost && <p>{errors.cost.message}</p>}
