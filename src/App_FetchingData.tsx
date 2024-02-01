@@ -1,10 +1,6 @@
 import { useState, useEffect } from "react";
-import apiClient, { CanceledError } from "./assets/Utilities/apiClient";
-
-interface User {
-	name: string;
-	id: number;
-}
+import apiClient, { CanceledError } from "./assets/services/apiClient";
+import UserService, { User } from "./assets/services/userService";
 
 const App_FetchingData = () => {
 	const [users, setUsers] = useState<User[]>([]);
@@ -12,12 +8,10 @@ const App_FetchingData = () => {
 	const [isLoading, setIsLoading] = useState(false);
 
 	useEffect(() => {
-		const controller = new AbortController();
+		const HTTPSERVICE = UserService;
 		setIsLoading(true);
-		apiClient
-			.get<User[]>("/users", {
-				signal: controller.signal,
-			}) //we add the controller in the config section of the function
+		const { request, cancel } = HTTPSERVICE.getAllUsers();
+		request
 			.then((res) => {
 				setUsers(res.data); //response from the fetch and store into state
 				setIsLoading(false);
@@ -28,7 +22,7 @@ const App_FetchingData = () => {
 				setIsLoading(false); //set is loading to false, use .finally when not testing
 			});
 		// .finally(() => setIsLoading(false)); // ------  This does not show properly when using strict mode
-		return () => controller.abort(); //cleanup function to cancel the fetch request if this component unmounts
+		return () => cancel(); //cleanup function to cancel the fetch request if this component unmounts
 	}, []);
 
 	//using async  useEffect can't use async directly, so we have to create a function on the inside that is asynchronous.
