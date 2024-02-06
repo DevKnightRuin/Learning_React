@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
-import apiClient, { CanceledError } from "./assets/services/apiClient";
-import UserService, { User } from "./assets/services/userService";
+import UserService, {
+	User,
+	CanceledError,
+} from "./assets/services/userService";
 
 const App_FetchingData = () => {
 	const [users, setUsers] = useState<User[]>([]);
@@ -8,9 +10,9 @@ const App_FetchingData = () => {
 	const [isLoading, setIsLoading] = useState(false);
 
 	useEffect(() => {
-		const HTTPSERVICE = UserService;
+		const UserHttpService = UserService;
 		setIsLoading(true);
-		const { request, cancel } = HTTPSERVICE.getAllUsers();
+		const { request, cancel } = UserHttpService.getAll<User>();
 		request
 			.then((res) => {
 				setUsers(res.data); //response from the fetch and store into state
@@ -43,8 +45,8 @@ const App_FetchingData = () => {
 	//functions
 	function addUser() {
 		const newUser = { id: 0, name: "Pinochio" };
-		apiClient
-			.post("https://jsonplaceholder.typicode.com/users/", newUser)
+		const UserHttpService = UserService;
+		UserHttpService.add<User>(newUser)
 			.then((res) => setUsers([...users, res.data]))
 			.catch((err) => {
 				setError(err.message);
@@ -53,28 +55,24 @@ const App_FetchingData = () => {
 
 	function deleteUser(user: User) {
 		const originalUsers = [...users];
+		const UserHttpService = UserService;
 		setUsers(users.filter((u) => u.id !== user.id));
-		apiClient
-			.delete("https://jsonplaceholder.typicode.com/users/" + user.id)
-			.catch((err) => {
-				setUsers(originalUsers);
-				setError(err.message);
-			});
+		UserHttpService.delete<User>(user).catch((err) => {
+			setUsers(originalUsers);
+			setError(err.message);
+		});
 	}
 
 	function updateUser(user: User) {
 		const originalUsers = [...users];
 		const updatedUser = { ...user, name: user.name + "!" };
 		setUsers(users.map((u) => (u.id === user.id ? updatedUser : u)));
-		apiClient
-			.patch(
-				"https://jsonplaceholder.typicode.com/users/" + user.id,
-				updateUser
-			)
-			.catch((err) => {
-				setError(err.message);
-				setUsers(originalUsers);
-			});
+
+		const UserHttpService = UserService;
+		UserHttpService.update<User>(user.id, updatedUser).catch((err) => {
+			setError(err.message);
+			setUsers(originalUsers);
+		});
 	}
 
 	function UID() {
